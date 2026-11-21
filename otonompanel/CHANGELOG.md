@@ -1,5 +1,9 @@
 # Değişiklikler
 
+## 0.9.3 (Beta, 21 Kasım 2026)
+- Canlı hava arka planı yenilendi: yağmur, sağanak, şimşek, kar, karla karışık yağmur, dolu, sis, rüzgâr, bulut ve
+  yıldızlı gece artık gerçekçi ve derinlikli. Efekt kartların arkasında kalır, kartları örtmez.
+
 ## 0.9.2 (Beta, 21 Kasım 2026)
 - Kurulum sihirbazının son adımı panelin tablette ya da başka bir tarayıcıda açılacağı adresi gösterir.
 
