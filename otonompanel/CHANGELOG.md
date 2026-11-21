@@ -1,5 +1,8 @@
 # Değişiklikler
 
+## 0.9.2 (Beta, 21 Kasım 2026)
+- Kurulum sihirbazının son adımı panelin tablette ya da başka bir tarayıcıda açılacağı adresi gösterir.
+
 ## 0.9.1 (Beta, 21 Kasım 2026)
 - Düzeltme: panel kenar çubuğundan açıldığında "Home Assistant ile giriş yap" artık "Invalid redirect URI" vermiyor.
   Giriş sayfası tam pencerede açılır, girişten sonra kenar çubuğundaki panele geri dönülür.

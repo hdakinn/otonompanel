@@ -6,7 +6,7 @@
 # Beta (Doğan, 21 Kasım 2026): OtonomPanel beta olarak yayınlanır; mağazadaki adı ve kenar çubuğundaki adı "(Beta)"
 # taşır, betadan çıkınca ikisinden de kaldırılır. İlk yayın 0.9.0 (Doğan'ın kararı); betadan çıkış 1.0.0.
 name: OtonomPanel (Beta)
-version: "0.9.1"
+version: "0.9.2"
 image: "ghcr.io/hdakinn/otonompanel"
 slug: otonompanel
 description: Tablet için kendiliğinden kurulan ev paneli (Lite ücretsiz, Pro yakında)
