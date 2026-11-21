@@ -1,5 +1,9 @@
 # Değişiklikler
 
+## 0.9.1 (Beta, 21 Kasım 2026)
+- Düzeltme: panel kenar çubuğundan açıldığında "Home Assistant ile giriş yap" artık "Invalid redirect URI" vermiyor.
+  Giriş sayfası tam pencerede açılır, girişten sonra kenar çubuğundaki panele geri dönülür.
+
 ## 0.9.0 (Beta, 21 Kasım 2026)
 İlk yayın (beta). Hataları Ayarlar → Destek ve sorun bildir'den iletebilirsin.
 - Kendiliğinden kurulan tablet paneli: kurulum yardımcısı evi tarar, cihazları odalara yerleştirir, yeni cihaz
