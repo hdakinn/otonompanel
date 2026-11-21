@@ -1,0 +1,14 @@
+# Uygulama seçeneklerinin HA'daki Türkçe adları (Supervisor: translations/<dil>.yaml,
+# configuration: {seçenek: {name, description}}, network: {port: açıklama}; supervisor/apps/validate.py)
+configuration:
+  ha_adresi:
+    name: Home Assistant iç adresi
+    description: >-
+      Uygulamanın Home Assistant'a ulaştığı adres. Çoğu evde değiştirmeyin (http://homeassistant:8123).
+      Home Assistant'ı farklı bir portta çalıştırıyorsanız düzeltin.
+  gunluk_seviyesi:
+    name: Günlük ayrıntısı
+    description: >-
+      Günlük sekmesine ne kadar ayrıntı yazılacağı. Sorun ararken "debug" seçin; tabletlerin bilgi satırları da yazılır.
+network:
+  8098/tcp: Tablet paneli. Tablette http://HA-ADRESİ:8098 açılır. İnternete açmayın (port yönlendirme yapmayın).

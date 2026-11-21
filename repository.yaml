@@ -1,0 +1,6 @@
+# OtonomPanel App deposu (Home Assistant "Depolar"a eklenen GitHub deposunun kök dosyası).
+# Alanlar Supervisor kaynağından doğrulandı (supervisor/store/validate.py SCHEMA_REPOSITORY_CONFIG:
+# name zorunlu, url ve maintainer isteğe bağlı). 21 Kasım 2026'dan beri herkese açık: github.com/hdakinn/otonompanel (docs/YAYIN.md).
+name: OtonomPanel
+url: https://otonomev.com
+maintainer: OtonomEv

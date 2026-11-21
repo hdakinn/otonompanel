@@ -1,0 +1,13 @@
+# English names of the app options in Home Assistant (Supervisor: translations/<lang>.yaml)
+configuration:
+  ha_adresi:
+    name: Home Assistant internal address
+    description: >-
+      The address the app uses to reach Home Assistant. Leave it unchanged in most homes (http://homeassistant:8123).
+      Change it only if Home Assistant runs on a different port.
+  gunluk_seviyesi:
+    name: Log level
+    description: >-
+      How much detail is written to the Log tab. Choose "debug" while troubleshooting; tablet info lines are logged too.
+network:
+  8098/tcp: Tablet dashboard. Open http://HA-ADDRESS:8098 on the tablet. Do not expose it to the internet (no port forwarding).

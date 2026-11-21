@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<!--
+  OtonomPanel kurulum yardımcısı (tek dosya). Bilgisayarda çift tıklayarak açılır; internetten bir şey yüklemez,
+  hiçbir bilgiyi bir yere göndermez. Yalnız yazdığın Home Assistant adresine "açık mı" diye bakar.
+  Bu dosya kurulum/kaynak/ altındaki parçalardan `python dev/kurulum_paketle.py` ile üretilir; elle değiştirme.
+-->
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src http: https:; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>OtonomPanel kurulum yardımcısı</title>
+  <style>/*
+ * sihirbaz.css - Kurulum yardımcısının görünümü (panelin sakin, sıcak tonlarıyla)
+ * Yazar: Doğan (OtonomPanel). Dış yazı tipi yok; bilgisayarın açık / koyu ayarına uyar.
+ */
+:root {
+  --bg: #161615; --surface: #201f1d; --surface-2: #2a2825; --border: rgba(235, 229, 218, 0.08);
+  --border-strong: rgba(235, 229, 218, 0.16); --text: #ebe5da; --text-dim: #9a948a; --accent: #d99b52;
+  --accent-bg: rgba(217, 155, 82, 0.14); --accent-line: rgba(217, 155, 82, 0.34); --ok: #8fb39d;
+  --danger: #d98466; --warn-bg: rgba(217, 155, 82, 0.12);
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f4f1ea; --surface: #fcfbf9; --surface-2: #eae4d8; --border: rgba(44, 42, 38, 0.10);
+    --border-strong: rgba(44, 42, 38, 0.20); --text: #2c2a26; --text-dim: #69645b; --accent: #8b5514;
+    --accent-bg: rgba(184, 120, 42, 0.12); --accent-line: rgba(168, 106, 30, 0.34); --ok: #466b56;
+    --danger: #a64d34; --warn-bg: rgba(184, 120, 42, 0.10);
+    color-scheme: light;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.5; }
+.sayfa { max-width: 760px; margin: 0 auto; padding: 32px 20px 48px; display: flex; flex-direction: column; gap: 14px; }
+.ust { display: flex; align-items: center; gap: 16px; margin-bottom: 6px; }
+.ust__simge svg { width: 56px; height: 56px; display: block; }
+h1 { font-size: 24px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 17px; font-weight: 600; margin: 0 0 6px; }
+.ust__alt { margin: 2px 0 0; color: var(--text-dim); font-size: 13.5px; }
+.surum { white-space: nowrap; }
+p { margin: 0 0 10px; }
+ol { margin: 8px 0 0; padding-left: 20px; }
+li { margin: 4px 0; }
+code { font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace; font-size: 13.5px; background: var(--surface-2); padding: 1px 6px; border-radius: 6px; user-select: all; }
+a { color: var(--accent); }
+.uyari { padding: 12px 16px; border-radius: 16px; background: var(--warn-bg); border: 1px solid var(--accent-line); margin: 0; }
+.adim { display: flex; gap: 16px; padding: 20px; border-radius: 22px; background: var(--surface); border: 1px solid var(--border); }
+.adim[hidden] { display: none; }
+.adim__no { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 600;
+  background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-line); }
+.adim__icerik { flex: 1; min-width: 0; }
+.satir { display: flex; flex-wrap: wrap; gap: 8px; }
+input[type="url"], input[type="text"] {
+  flex: 1 1 260px; min-width: 0; padding: 11px 14px; border-radius: 14px; border: 1px solid var(--border-strong);
+  background: var(--bg); color: var(--text); font: inherit; }
+input:focus-visible, .dugme:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dugme { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 10px 16px;
+  border-radius: 14px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text);
+  font: inherit; font-weight: 500; cursor: pointer; text-decoration: none; }
+.dugme:hover { border-color: var(--accent-line); }
+.dugme.birincil { background: var(--accent-bg); border-color: var(--accent-line); color: var(--accent); margin: 6px 0 2px; }
+.dugme.kucuk { min-height: 34px; padding: 5px 12px; font-size: 13.5px; border-radius: 10px; }
+.dugme[aria-disabled="true"] { opacity: 0.45; pointer-events: none; }
+.durum { min-height: 1.5em; margin: 8px 0 0; font-size: 14px; color: var(--text-dim); }
+.durum.iyi { color: var(--ok); }
+.durum.kotu { color: var(--danger); }
+.uyari-yazi { color: var(--accent); }
+.not { color: var(--text-dim); font-size: 14px; margin-top: 8px; }
+.tur { border: 0; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; }
+.tur legend { font-size: 13.5px; color: var(--text-dim); margin-bottom: 6px; padding: 0; }
+.secenek { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 16px; border: 1px solid var(--border); cursor: pointer; }
+.secenek:has(input:checked) { border-color: var(--accent-line); background: var(--accent-bg); }
+.secenek input { margin-top: 4px; accent-color: var(--accent); }
+.secenek span { display: flex; flex-direction: column; }
+.secenek small { color: var(--text-dim); font-size: 13.5px; }
+.tablet { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; margin: 14px 0 6px; }
+.qr { flex: none; width: 196px; height: 196px; padding: 0; border-radius: 16px; overflow: hidden; background: #fff; }
+.qr svg { width: 100%; height: 100%; display: block; }
+.tablet__bilgi { flex: 1 1 260px; min-width: 0; }
+.adres { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; word-break: break-all; }
+.ip-alan { display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; color: var(--text-dim); margin-top: 10px; }
+.ip-alan input { flex: none; }
+.alt { color: var(--text-dim); font-size: 13.5px; padding: 0 6px; }
+@media (max-width: 520px) {
+  .sayfa { padding: 20px 12px 32px; }
+  .adim { padding: 16px; gap: 12px; }
+  .qr { width: 100%; max-width: 260px; height: auto; aspect-ratio: 1; }
+}
+@media (prefers-reduced-motion: no-preference) { .dugme { transition: border-color 160ms ease; } }
+</style>
+</head>
+<body>
+  <main class="sayfa">
+    <header class="ust">
+      <span class="ust__simge" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#171b20"/>
+  <path d="M256 104 92 236v172a24 24 0 0 0 24 24h96V320h88v112h96a24 24 0 0 0 24-24V236z" fill="none" stroke="#7aa7d9" stroke-width="28" stroke-linejoin="round"/>
+  <circle cx="256" cy="246" r="34" fill="#e3be6a"/>
+</svg></span>
+      <div>
+        <h1>OtonomPanel kurulumu</h1>
+        <p class="ust__alt">Bu sayfa yalnız bilgisayarında çalışır. Hiçbir bilgiyi internete göndermez. <span class="surum" data-surum></span></p>
+      </div>
+    </header>
+    <p class="uyari" data-onyayin hidden>Yayın öncesi sürüm: OtonomPanel henüz uygulama mağazasında yok. Kurulum yerel klasörden yapılır (2. adım).</p>
+
+    <section class="adim" aria-labelledby="b1">
+      <span class="adim__no" aria-hidden="true">1</span>
+      <div class="adim__icerik">
+        <h2 id="b1">Home Assistant adresin</h2>
+        <p>Tarayıcıda Home Assistant'ı hangi adresle açıyorsan onu yaz. Home Assistant 2025.12 ya da üstü gerekir.</p>
+        <div class="satir">
+          <input id="ha-adres" type="url" inputmode="url" autocomplete="off" spellcheck="false" aria-describedby="ha-durum">
+          <button type="button" class="dugme" data-dene>Bağlantıyı dene</button>
+        </div>
+        <p class="durum" id="ha-durum" role="status" aria-live="polite"></p>
+        <fieldset class="tur">
+          <legend>Home Assistant kurulum türü</legend>
+          <label class="secenek"><input type="radio" name="tur" value="os" checked>
+            <span><strong>Home Assistant OS</strong><small>Ayarlar menüsünde "Uygulamalar" var. Çoğu ev böyle (Raspberry Pi, Green, Yellow, sanal makine).</small></span></label>
+          <label class="secenek"><input type="radio" name="tur" value="core">
+            <span><strong>Container ya da Core</strong><small>"Uygulamalar" menüsü yok. Panel Home Assistant'ın www klasörüne kopyalanır.</small></span></label>
+        </fieldset>
+      </div>
+    </section>
+
+    <section class="adim" data-yol="os" aria-labelledby="b2">
+      <span class="adim__no" aria-hidden="true">2</span>
+      <div class="adim__icerik">
+        <h2 id="b2">OtonomPanel uygulamasını kur</h2>
+        <div data-yayin-yolu>
+          <a class="dugme birincil" data-app-bag target="_blank" rel="noopener noreferrer">OtonomPanel'i Home Assistant'a ekle</a>
+          <ol>
+            <li>Açılan sayfada "Uygulama deposu eklensin mi?" sorusuna <b>Ekle</b> de.</li>
+            <li><b>Kurulum</b>'a, sonra <b>Başlat</b>'a bas. <b>Kenar çubuğunda göster</b> açık kalsın.</li>
+          </ol>
+        </div>
+        <div data-yerel-yolu hidden>
+          <ol>
+            <li>Home Assistant'ta <b>Samba share</b> uygulamasını kur ve başlat (dosya paylaşımı).</li>
+            <li>Windows Dosya Gezgini'nin adres çubuğuna <code data-samba></code> yaz.</li>
+            <li>OtonomPanel paketindeki <b>otonompanel</b> klasörünü bu klasöre kopyala.</li>
+            <li>Ayarlar → Uygulamalar → <b>Uygulama mağazası</b>'nda sağ üstteki menüden <b>Güncellemeleri kontrol et</b>'e bas:
+              OtonomPanel <b>Local apps</b> bölümünde görünür.</li>
+          </ol>
+          <a class="dugme birincil" data-app-bag target="_blank" rel="noopener noreferrer">OtonomPanel uygulamasını aç</a>
+          <p class="not"><b>Kurulum</b>'a, sonra <b>Başlat</b>'a bas. <b>Kenar çubuğunda göster</b> açık kalsın.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="adim" data-yol="os" aria-labelledby="b3">
+      <span class="adim__no" aria-hidden="true">3</span>
+      <div class="adim__icerik">
+        <h2 id="b3">Paneli kur</h2>
+        <a class="dugme birincil" data-panel-bag target="_blank" rel="noopener noreferrer">Paneli aç</a>
+        <ol>
+          <li><b>Home Assistant ile giriş yap</b>'a bas, <b>yönetici</b> kullanıcınla gir.</li>
+          <li>Kurulum evini tarar ve paneli hazırlar; istediğin cihazları seç, kaydet.</li>
+        </ol>
+        <p class="not">Kenar çubuğundaki <b>OtonomPanel (Beta)</b>'dan da açılır.</p>
+      </div>
+    </section>
+
+    <section class="adim" data-yol="core" aria-labelledby="b2c" hidden>
+      <span class="adim__no" aria-hidden="true">2</span>
+      <div class="adim__icerik">
+        <h2 id="b2c">Paneli Home Assistant'a kopyala</h2>
+        <ol>
+          <li>OtonomPanel paketindeki <b>panel</b> klasörünün içindekileri Home Assistant'ın yapılandırma klasöründe
+            <code>www/otonompanel/</code> altına kopyala.</li>
+          <li><code>www</code> klasörünü yeni açtıysan Home Assistant'ı bir kez yeniden başlat.</li>
+          <li>Paneli aç, <b>yönetici</b> kullanıcınla gir; kurulum evini tarar.</li>
+        </ol>
+        <a class="dugme birincil" data-www-bag target="_blank" rel="noopener noreferrer">Paneli aç</a>
+      </div>
+    </section>
+
+    <section class="adim" aria-labelledby="b4">
+      <span class="adim__no" aria-hidden="true" data-tablet-no>4</span>
+      <div class="adim__icerik">
+        <h2 id="b4">Tableti bağla</h2>
+        <ol>
+          <li>Home Assistant'ta tablet için ayrı bir kullanıcı aç. <b>Yönetici yapma.</b>
+            <a data-kullanici-bag target="_blank" rel="noopener noreferrer">Kullanıcılar sayfası</a></li>
+          <li>Tablette bu adresi aç ya da kamerayla kodu okut, tablet kullanıcısıyla bir kez giriş yap.</li>
+        </ol>
+        <div class="tablet">
+          <div class="qr" data-qr role="img" aria-label="Tablet adresinin QR kodu"></div>
+          <div class="tablet__bilgi">
+            <p class="adres"><span data-tablet-adres></span>
+              <button type="button" class="dugme kucuk" data-kopyala>Kopyala</button></p>
+            <p class="durum uyari-yazi" data-mdns hidden>Android tabletler ".local" adını çoğu zaman bulamaz. Home Assistant'ın
+              IP adresini yaz (Home Assistant'ta Ayarlar → Sistem → Ağ):</p>
+            <p class="durum uyari-yazi" data-uzak hidden>Bu adres ev dışından erişim adresine benziyor. Panel ev ağından
+              açılır (8098 portu internete açılmaz): Home Assistant'ın evdeki IP adresini yaz.</p>
+            <label class="ip-alan">Tablet için IP adresi (isteğe bağlı)
+              <input id="tablet-ip" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="ör. 192.168.1.20"></label>
+            <p class="durum" data-ip-durum role="status" aria-live="polite"></p>
+          </div>
+        </div>
+        <ol start="3">
+          <li>Sayfayı ana ekrana ekle: Android'de Chrome menüsü → <b>Ana ekrana ekle</b>; iPad'de Safari'de Paylaş →
+            <b>Ana Ekrana Ekle</b>. Panel oradan tam ekran açılır.</li>
+          <li>Tabletin ayarlarında ekranın kapanma süresini uzat (ya da şarjdayken açık kalsın).</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="adim" aria-labelledby="b5">
+      <span class="adim__no" aria-hidden="true" data-pro-no>5</span>
+      <div class="adim__icerik">
+        <h2 id="b5">Pro (isteğe bağlı)</h2>
+        <p>Panel Lite olarak ücretsiz çalışır. Pro'yu <b>14 gün ücretsiz</b> denemek ya da lisans anahtarını girmek için
+          panelde <b>Ayarlar → Sürüm</b>'e dokun. Lisans evin tamamı içindir; bütün tabletlerde geçer.</p>
+      </div>
+    </section>
+
+    <footer class="alt">Sorun mu var? Home Assistant'ta OtonomPanel uygulamasının <b>Günlük</b> sekmesi tabletlerin
+      hatalarını da gösterir.</footer>
+  </main>
+  <script>(() => {
+'use strict';
+const KURULUM = Object.freeze({"surum": "0.9.0", "appId": "0d208a70_otonompanel", "repositoryUrl": "https://github.com/hdakinn/otonompanel", "yayin": true});
+/**
+ * qr.js - QR kodu üretici (bayt kipi, hata düzeltme düzeyi M, sürüm 1-10)
+ * ========================================================================
+ * Yazar: Doğan (OtonomPanel)
+ *
+ * Kurulum yardımcısında tabletin açacağı adresi göstermek için. ISO/IEC 18004'e göre sıfırdan yazıldı;
+ * dış kütüphane yok, internetten bir şey yüklenmez.
+ * - Metin UTF-8 bayt olarak kodlanır; sığan en küçük sürüm seçilir (en çok 213 bayt: sürüm 10).
+ * - Hata düzeltme: Reed–Solomon, GF(256), indirgeme polinomu x^8 + x^4 + x^3 + x^2 + 1 (0x11D).
+ * - Sekiz maskenin hepsi denenir, ceza puanı en düşük olan seçilir.
+ * Saf modül: DOM'a dokunmaz; Node'da test edilir (dev/testler/kurulum.test.mjs).
+ * Kurulum sayfasına `dev/kurulum_paketle.py` gömer (export sözcükleri orada atılır).
+ */
+
+const QR_MAX_VERSION = 10;
+
+// M düzeyi blok yapısı: [blok başına hata düzeltme sözcüğü, [blok sayısı, bloktaki veri sözcüğü], ...]
+const M_BLOCKS = [
+  null,
+  [10, [1, 16]],
+  [16, [1, 28]],
+  [26, [1, 44]],
+  [18, [2, 32]],
+  [24, [2, 43]],
+  [16, [4, 27]],
+  [18, [4, 31]],
+  [22, [2, 38], [2, 39]],
+  [22, [3, 36], [2, 37]],
+  [26, [4, 43], [1, 44]],
+];
+
+// Hizalama desenlerinin merkez satır / sütunları
+const ALIGNMENT_CENTERS = [null, [], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34], [6, 22, 38], [6, 24, 42], [6, 26, 46], [6, 28, 50]];
+
+const FORMAT_MASK = 0x5412;   // biçim bilgisinin XOR maskesi
+const FORMAT_GEN = 0x537;     // BCH(15,5) üreteci
+const VERSION_GEN = 0x1f25;   // BCH(18,6) üreteci
+const ECC_M_BITS = 0b00;      // M düzeyinin biçim bitleri
+
+// ---- GF(256) aritmetiği --------------------------------------------------------
+const EXP = new Uint8Array(512);
+const LOG = new Uint8Array(256);
+{
+  let value = 1;
+  for (let power = 0; power < 255; power++) {
+    EXP[power] = value;
+    LOG[value] = power;
+    value <<= 1;
+    if (value & 0x100) value ^= 0x11d;
+  }
+  for (let power = 255; power < 512; power++) EXP[power] = EXP[power - 255];
+}
+const gfMul = (a, b) => (a && b ? EXP[LOG[a] + LOG[b]] : 0);
+
+/** Reed–Solomon üreteç polinomu: (x + α^0)(x + α^1)…(x + α^(n-1)); katsayılar yüksek dereceden düşüğe. */
+function rsGenerator(degree) {
+  let poly = [1];
+  for (let root = 0; root < degree; root++) {
+    const next = new Array(poly.length + 1).fill(0);
+    poly.forEach((coef, i) => {
+      next[i] ^= coef;
+      next[i + 1] ^= gfMul(coef, EXP[root]);
+    });
+    poly = next;
+  }
+  return poly;
+}
+
+/** Veri sözcüklerinin hata düzeltme sözcükleri (bölümün kalanı). */
+function rsRemainder(data, degree) {
+  const gen = rsGenerator(degree);
+  const rem = new Array(degree).fill(0);
+  for (const byte of data) {
+    const factor = byte ^ rem[0];
+    rem.shift();
+    rem.push(0);
+    for (let i = 0; i < degree; i++) rem[i] ^= gfMul(gen[i + 1], factor);
+  }
+  return rem;
+}
+
+/** 15 bitlik biçim bilgisi (M düzeyi + maske), maskelenmiş. */
+function formatBits(mask, eccBits = ECC_M_BITS) {
+  const data = (eccBits << 3) | mask;
+  let rem = data;
+  for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * FORMAT_GEN);
+  return ((data << 10) | rem) ^ FORMAT_MASK;
+}
+
+/** 18 bitlik sürüm bilgisi (sürüm 7 ve üstü). */
+function versionBits(version) {
+  let rem = version;
+  for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * VERSION_GEN);
+  return (version << 12) | rem;
+}
+
+const dataCodewordCount = version => M_BLOCKS[version].slice(1).reduce((sum, [count, size]) => sum + count * size, 0);
+
+/** Metnin sığdığı en küçük sürüm; sığmazsa 0. */
+function pickVersion(byteLength) {
+  for (let version = 1; version <= QR_MAX_VERSION; version++) {
+    const countBits = version <= 9 ? 8 : 16;
+    if (4 + countBits + byteLength * 8 <= dataCodewordCount(version) * 8) return version;
+  }
+  return 0;
+}
+
+/** Bayt kipinde veri sözcükleri (sonlandırıcı ve dolgu baytları dahil). */
+function encodeData(bytes, version) {
+  const capacity = dataCodewordCount(version) * 8;
+  const bits = [];
+  const put = (value, length) => {
+    for (let i = length - 1; i >= 0; i--) bits.push((value >>> i) & 1);
+  };
+  put(0b0100, 4);
+  put(bytes.length, version <= 9 ? 8 : 16);
+  for (const b of bytes) put(b, 8);
+  put(0, Math.min(4, capacity - bits.length));
+  while (bits.length % 8) bits.push(0);
+  for (let pad = 0xec; bits.length < capacity; pad = pad === 0xec ? 0x11 : 0xec) put(pad, 8);
+  const words = [];
+  for (let i = 0; i < bits.length; i += 8) words.push(bits.slice(i, i + 8).reduce((acc, bit) => (acc << 1) | bit, 0));
+  return words;
+}
+
+/** Bloklara böler, hata düzeltmeyi ekler ve sözcükleri sırayla harmanlar. */
+function interleave(dataWords, version) {
+  const [ecLength, ...groups] = M_BLOCKS[version];
+  const blocks = [];
+  let offset = 0;
+  for (const [count, size] of groups) {
+    for (let b = 0; b < count; b++) {
+      const data = dataWords.slice(offset, offset + size);
+      offset += size;
+      blocks.push({ data, ec: rsRemainder(data, ecLength) });
+    }
+  }
+  const out = [];
+  const longest = Math.max(...blocks.map(b => b.data.length));
+  for (let i = 0; i < longest; i++) for (const b of blocks) if (i < b.data.length) out.push(b.data[i]);
+  for (let i = 0; i < ecLength; i++) for (const b of blocks) out.push(b.ec[i]);
+  return out;
+}
+
+const MASKS = [
+  (r, c) => (r + c) % 2 === 0,
+  (r) => r % 2 === 0,
+  (r, c) => c % 3 === 0,
+  (r, c) => (r + c) % 3 === 0,
+  (r, c) => (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0,
+  (r, c) => ((r * c) % 2) + ((r * c) % 3) === 0,
+  (r, c) => (((r * c) % 2) + ((r * c) % 3)) % 2 === 0,
+  (r, c) => (((r + c) % 2) + ((r * c) % 3)) % 2 === 0,
+];
+
+/** Sabit desenler çizilmiş, veri yerleştirilmiş (maskesiz) matris. */
+function buildBase(version, codewords) {
+  const size = 17 + 4 * version;
+  const modules = new Uint8Array(size * size);
+  const fixed = new Uint8Array(size * size);
+  const set = (r, c, dark) => {
+    modules[r * size + c] = dark ? 1 : 0;
+    fixed[r * size + c] = 1;
+  };
+  // Konum desenleri (7x7) ve çevrelerindeki açık şerit
+  for (const [r0, c0] of [[0, 0], [0, size - 7], [size - 7, 0]]) {
+    for (let dr = -1; dr <= 7; dr++) {
+      for (let dc = -1; dc <= 7; dc++) {
+        const r = r0 + dr;
+        const c = c0 + dc;
+        if (r < 0 || c < 0 || r >= size || c >= size) continue;
+        const ring = Math.max(Math.abs(dr - 3), Math.abs(dc - 3));
+        set(r, c, ring !== 2 && ring !== 4);
+      }
+    }
+  }
+  // Zamanlama çizgileri
+  for (let i = 8; i < size - 8; i++) {
+    set(6, i, i % 2 === 0);
+    set(i, 6, i % 2 === 0);
+  }
+  // Hizalama desenleri (konum desenleriyle çakışanlar hariç)
+  const centers = ALIGNMENT_CENTERS[version];
+  const last = centers.length - 1;
+  centers.forEach((r, i) => centers.forEach((c, j) => {
+    if ((i === 0 && j === 0) || (i === 0 && j === last) || (i === last && j === 0)) return;
+    for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) set(r + dr, c + dc, Math.max(Math.abs(dr), Math.abs(dc)) !== 1);
+  }));
+  // Biçim bilgisi alanları (değer maskeyle birlikte yazılır) ve hep koyu modül
+  drawFormat(modules, fixed, size, 0);
+  // Sürüm bilgisi (7 ve üstü)
+  if (version >= 7) {
+    const bits = versionBits(version);
+    for (let i = 0; i < 18; i++) {
+      const dark = (bits >>> i) & 1;
+      const a = size - 11 + (i % 3);
+      const b = Math.floor(i / 3);
+      set(b, a, dark);
+      set(a, b, dark);
+    }
+  }
+  // Veri: sağ alttan başlayarak iki sütunluk şeritlerde zikzak (dikey zamanlama sütunu atlanır).
+  // Sözcükler bitince kalan modüller (sürüm 2-6'da 7 "kalan bit") 0 olur.
+  const totalBits = codewords.length * 8;
+  let index = 0;
+  for (let right = size - 1; right >= 1; right -= 2) {
+    if (right === 6) right = 5;
+    const upward = ((right + 1) & 2) === 0;
+    for (let step = 0; step < size; step++) {
+      const r = upward ? size - 1 - step : step;
+      for (let k = 0; k < 2; k++) {
+        const c = right - k;
+        if (fixed[r * size + c]) continue;
+        modules[r * size + c] = index < totalBits ? (codewords[index >>> 3] >>> (7 - (index & 7))) & 1 : 0;
+        index++;
+      }
+    }
+  }
+  return { size, modules, fixed };
+}
+
+/** Biçim bilgisini iki kopya halinde yazar (sol üst konum deseninin çevresi, sağ üst ve sol alt). */
+function drawFormat(modules, fixed, size, mask) {
+  const bits = formatBits(mask);
+  const put = (r, c, i) => {
+    modules[r * size + c] = (bits >>> i) & 1;
+    fixed[r * size + c] = 1;
+  };
+  for (let i = 0; i <= 5; i++) put(i, 8, i);
+  put(7, 8, 6);
+  put(8, 8, 7);
+  put(8, 7, 8);
+  for (let i = 9; i < 15; i++) put(8, 14 - i, i);
+  for (let i = 0; i < 8; i++) put(8, size - 1 - i, i);
+  for (let i = 8; i < 15; i++) put(size - 15 + i, 8, i);
+  modules[(size - 8) * size + 8] = 1; // hep koyu modül
+  fixed[(size - 8) * size + 8] = 1;
+}
+
+/** Ceza puanı (ISO 18004 §7.8.3): uzun diziler, 2x2 bloklar, konum desenine benzeyenler, koyu oranı. */
+function penalty(modules, size) {
+  let score = 0;
+  const at = (r, c) => modules[r * size + c];
+  const finderLike = [[1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1]];
+  for (let pass = 0; pass < 2; pass++) {
+    for (let i = 0; i < size; i++) {
+      const line = j => (j < 0 || j >= size ? 0 : pass === 0 ? at(i, j) : at(j, i));
+      let color = -1;
+      let run = 0;
+      for (let j = 0; j < size; j++) {
+        const v = line(j);
+        if (v === color) {
+          run++;
+          if (run === 5) score += 3;
+          else if (run > 5) score += 1;
+        } else {
+          color = v;
+          run = 1;
+        }
+      }
+      for (let start = -10; start < size; start++) {
+        for (const pattern of finderLike) {
+          if (pattern.every((v, k) => line(start + k) === v)) score += 40;
+        }
+      }
+    }
+  }
+  for (let r = 0; r < size - 1; r++) {
+    for (let c = 0; c < size - 1; c++) {
+      const v = at(r, c);
+      if (v === at(r, c + 1) && v === at(r + 1, c) && v === at(r + 1, c + 1)) score += 3;
+    }
+  }
+  let dark = 0;
+  for (const v of modules) dark += v;
+  score += Math.floor(Math.abs((dark * 100) / modules.length - 50) / 5) * 10;
+  return score;
+}
+
+/**
+ * Metni QR koduna çevirir.
+ * @param {string} text
+ * @param {{ mask?: number }} [options] mask verilirse o maske kullanılır (test için)
+ * @returns {{ version: number, size: number, mask: number, modules: Uint8Array }} modules: satır satır, 1 = koyu
+ */
+function encodeQr(text, { mask = null } = {}) {
+  const bytes = Array.from(new TextEncoder().encode(String(text ?? '')));
+  const version = pickVersion(bytes.length);
+  if (!version) throw new RangeError(`QR için metin çok uzun: ${bytes.length} bayt (en çok 213)`);
+  const codewords = interleave(encodeData(bytes, version), version);
+  const base = buildBase(version, codewords);
+  const candidates = mask === null ? [0, 1, 2, 3, 4, 5, 6, 7] : [mask];
+  let best = null;
+  for (const m of candidates) {
+    const modules = base.modules.slice();
+    const fixed = base.fixed.slice();
+    for (let r = 0; r < base.size; r++) {
+      for (let c = 0; c < base.size; c++) {
+        if (!fixed[r * base.size + c] && MASKS[m](r, c)) modules[r * base.size + c] ^= 1;
+      }
+    }
+    drawFormat(modules, fixed, base.size, m);
+    const score = candidates.length > 1 ? penalty(modules, base.size) : 0;
+    if (!best || score < best.score) best = { score, mask: m, modules };
+  }
+  return { version, size: base.size, mask: best.mask, modules: best.modules };
+}
+
+/**
+ * QR kodunu SVG olarak verir (yatay koyu diziler tek dikdörtgen: küçük dosya).
+ * @param {{ size: number, modules: Uint8Array }} qr
+ * @param {{ border?: number, dark?: string, light?: string, title?: string }} [options]
+ */
+function qrToSvg(qr, { border = 4, dark = '#111', light = '#fff', title = '' } = {}) {
+  const total = qr.size + border * 2;
+  const parts = [];
+  for (let r = 0; r < qr.size; r++) {
+    let c = 0;
+    while (c < qr.size) {
+      if (!qr.modules[r * qr.size + c]) { c++; continue; }
+      const start = c;
+      while (c < qr.size && qr.modules[r * qr.size + c]) c++;
+      parts.push(`M${start + border} ${r + border}h${c - start}v1h-${c - start}z`);
+    }
+  }
+  const safeTitle = String(title).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}" shape-rendering="crispEdges" role="img"${safeTitle ? ` aria-label="${safeTitle}"` : ''}>`
+    + `<rect width="${total}" height="${total}" fill="${light}"/><path fill="${dark}" d="${parts.join('')}"/></svg>`;
+}
+
+/**
+ * sihirbaz_mantik.js - Kurulum yardımcısının saf mantığı (adres doğrulama ve bağlantılar)
+ * =====================================================================================
+ * Yazar: Doğan (OtonomPanel)
+ *
+ * - HA adresini düzenler: şema yoksa http://, port yoksa (http'de) 8123; yol, sorgu ve parça atılır.
+ * - HA'nın kendi "My" yönlendirmesiyle App sayfası bağlantısı: /_my_redirect/supervisor_app?app=…&repository_url=…
+ *   (HA ön yüzü 20261028.6: sayfa depo eksikse eklemeyi sorar, sonra App'i gösterir; `my` bileşeni varsayılan
+ *   yapılandırmada açıktır. HA çekirdeği: homeassistant/components/my → /_my_redirect paneli.)
+ * - Tablet adresi: App'in tablet portu (8098) HA ile aynı makinede, düz HTTP'dir.
+ * - App kimliği: depo adresinden (Supervisor: sha1(adres küçük harf)[:8] + "_" + slug); yerel klasörde "local_<slug>".
+ *   Kimliği `dev/kurulum_paketle.py` hesaplar ve sayfaya gömer.
+ * Saf modül: DOM'a dokunmaz; Node'da test edilir (dev/testler/kurulum.test.mjs).
+ */
+
+const DEFAULT_HA_URL = 'http://homeassistant.local:8123';
+const HA_DEFAULT_PORT = '8123';
+const APP_TABLET_PORT = 8098;
+
+/**
+ * Kullanıcının yazdığı HA adresini düzenler.
+ * @returns {{ ok: true, url: string, hostname: string, https: boolean } | { ok: false, reason: string }}
+ */
+function normalizeHaUrl(input) {
+  let text = String(input ?? '').trim();
+  if (!text) return { ok: false, reason: 'Home Assistant adresini yaz.' };
+  if (/\s/.test(text)) return { ok: false, reason: 'Adreste boşluk olamaz.' };
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) text = `http://${text}`;
+  let parsed;
+  try {
+    parsed = new URL(text);
+  } catch {
+    return { ok: false, reason: 'Adres anlaşılamadı. Örnek: http://192.168.1.20:8123' };
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    return { ok: false, reason: 'Adres http:// ya da https:// ile başlamalı.' };
+  }
+  if (!parsed.hostname) return { ok: false, reason: 'Adreste makine adı ya da IP yok.' };
+  if (parsed.username || parsed.password) return { ok: false, reason: 'Adrese kullanıcı adı ya da şifre yazma.' };
+  const https = parsed.protocol === 'https:';
+  const port = parsed.port || (https ? '' : HA_DEFAULT_PORT);
+  const url = `${parsed.protocol}//${parsed.hostname}${port ? `:${port}` : ''}`;
+  return { ok: true, url, hostname: parsed.hostname, https };
+}
+
+/** Makine adı yerel ağ adı mı (.local)? Android tabletler çoğu zaman çözemez: IP önerilir. */
+const isMdnsHostname = hostname => /\.local\.?$/i.test(String(hostname || ''));
+
+/**
+ * Ev dışından erişim adresine benziyor mu (https ya da alan adı)? App'in tablet portu yalnız ev ağında açıktır:
+ * böyle bir adda tablet için evdeki IP istenir. Noktasız adlar (homeassistant) ve .local ev ağı adıdır.
+ */
+function isLikelyRemoteHost(hostname, https = false) {
+  const name = String(hostname || '');
+  if (!name || isIpAddress(name) || isMdnsHostname(name)) return false;
+  return https || name.includes('.');
+}
+
+/** IPv4 ya da köşeli parantezli IPv6 mı? */
+const isIpAddress = hostname => /^(\d{1,3}\.){3}\d{1,3}$/.test(String(hostname || '')) || /^\[[0-9a-f:.]+\]$/i.test(String(hostname || ''));
+
+/**
+ * Tablet için ayrıca yazılan IP / ad (isteğe bağlı). Boşsa HA'nın makine adı kullanılır.
+ * @returns {{ ok: true, hostname: string } | { ok: false, reason: string }}
+ */
+function normalizeTabletHost(input, fallbackHostname) {
+  const text = String(input ?? '').trim().replace(/^https?:\/\//i, '').replace(/[/:].*$/, '');
+  if (!text) return { ok: true, hostname: fallbackHostname };
+  if (!/^[a-z0-9.-]+$/i.test(text)) return { ok: false, reason: 'Tablet adresi için yalnız IP ya da makine adı yaz (ör. 192.168.1.20).' };
+  return { ok: true, hostname: text };
+}
+
+/** Tabletin açacağı panel adresi (App'in tablet portu). */
+function tabletUrl(hostname, port = APP_TABLET_PORT) {
+  return `http://${hostname}:${port}`;
+}
+
+/** HA OS olmayan kurulum (Container / Core): /config/www yolu. */
+function wwwPanelUrl(haUrl) {
+  return `${haUrl}/local/otonompanel/index.html`;
+}
+
+/**
+ * HA'da App sayfasını açan bağlantı. Depo adresi verilirse HA, depo ekli değilse eklemeyi sorar.
+ * @param {string} haUrl normalizeHaUrl çıktısı
+ * @param {{ appId: string, repositoryUrl?: string }} app
+ */
+function appPageLink(haUrl, { appId, repositoryUrl = '' }) {
+  const params = new URLSearchParams({ app: appId });
+  if (repositoryUrl) params.set('repository_url', repositoryUrl);
+  return `${haUrl}/_my_redirect/supervisor_app?${params.toString()}`;
+}
+
+/** HA'da kullanıcı ekleme sayfası (tablet için yönetici olmayan kullanıcı). */
+const usersPageLink = haUrl => `${haUrl}/config/users`;
+
+/** Ulaşılabilirlik denemesinin adresi: HA'nın ön yüzü her zaman bu dosyayı sunar. */
+const probeUrl = haUrl => `${haUrl}/manifest.json`;
+
+/**
+ * sihirbaz_ui.js - Kurulum yardımcısının sayfa bağlantıları (DOM)
+ * ==============================================================
+ * Yazar: Doğan (OtonomPanel)
+ *
+ * qr.js ve sihirbaz_mantik.js ile aynı kapsamda çalışır (dev/kurulum_paketle.py hepsini tek betikte birleştirir).
+ * KURULUM: paketleyicinin gömdüğü ayarlar { surum, appId, repositoryUrl, yayin }.
+ * Sayfa yalnız yazılan HA adresine "açık mı" diye bakar (fetch, no-cors); başka hiçbir yere istek göndermez.
+ */
+
+const MOD = 'KURULUM';
+const log = {
+  info: (msg, detail) => console.info(`[${MOD}] ${msg}`, detail ?? ''),
+  warn: (msg, detail) => console.warn(`[${MOD}] ${msg}`, detail ?? ''),
+};
+const PROBE_TIMEOUT_MS = 5000;
+
+const $ = sel => document.querySelector(sel);
+const $$ = sel => [...document.querySelectorAll(sel)];
+
+const state = { ha: null, tabletHost: '', probeSeq: 0 };
+
+function setStatus(el, text, kind = '') {
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle('iyi', kind === 'iyi');
+  el.classList.toggle('kotu', kind === 'kotu');
+}
+
+function setLink(sel, href) {
+  for (const el of $$(sel)) {
+    if (href) {
+      el.href = href;
+      el.removeAttribute('aria-disabled');
+    } else {
+      el.removeAttribute('href');
+      el.setAttribute('aria-disabled', 'true');
+    }
+  }
+}
+
+/** Adres ya da tablet IP'si değişince bütün bağlantıları ve QR kodunu yeniler. */
+function refresh() {
+  const result = normalizeHaUrl($('#ha-adres').value);
+  const status = $('#ha-durum');
+  if (!result.ok) {
+    state.ha = null;
+    setStatus(status, result.reason, 'kotu');
+    for (const sel of ['[data-app-bag]', '[data-panel-bag]', '[data-www-bag]', '[data-kullanici-bag]']) setLink(sel, '');
+    $('[data-tablet-adres]').textContent = '—';
+    $('[data-qr]').innerHTML = '';
+    return;
+  }
+  if (state.ha?.url !== result.url) setStatus(status, '');
+  state.ha = result;
+  $('[data-samba]').textContent = `\\\\${result.hostname}\\local_apps`;
+  const coreMode = document.querySelector('input[name="tur"]:checked')?.value === 'core';
+  setLink('[data-app-bag]', appPageLink(result.url, { appId: KURULUM.appId, repositoryUrl: KURULUM.repositoryUrl }));
+  setLink('[data-www-bag]', wwwPanelUrl(result.url));
+  setLink('[data-kullanici-bag]', usersPageLink(result.url));
+
+  const ipInput = $('#tablet-ip');
+  const host = normalizeTabletHost(ipInput.value, result.hostname);
+  setStatus($('[data-ip-durum]'), host.ok ? '' : host.reason, host.ok ? '' : 'kotu');
+  const hostname = host.ok ? host.hostname : result.hostname;
+  const givenIp = host.ok && hostname !== result.hostname;
+  $('[data-mdns]').hidden = !isMdnsHostname(hostname);
+  // Ev dışı erişim adresi (https / alan adı): App'in tablet portu yalnız ev ağında açık, IP gerekir
+  $('[data-uzak]').hidden = coreMode || !isLikelyRemoteHost(hostname, result.https && !givenIp);
+  setLink('[data-panel-bag]', tabletUrl(hostname));
+
+  // Tablet adresi: App yolunda App'in tablet portu, www yolunda HA'nın /local adresi
+  let address;
+  if (coreMode) {
+    const haHost = new URL(result.url);
+    haHost.hostname = hostname;
+    address = wwwPanelUrl(haHost.origin);
+  } else {
+    address = tabletUrl(hostname);
+  }
+  $('[data-tablet-adres]').textContent = address;
+  try {
+    const qr = encodeQr(address);
+    $('[data-qr]').innerHTML = qrToSvg(qr, { border: 3, dark: '#111', light: '#fff', title: address });
+    $('[data-qr]').setAttribute('aria-label', `QR kodu: ${address}`);
+  } catch (err) {
+    log.warn('QR çizilemedi', err?.message);
+    $('[data-qr]').textContent = 'Adres QR için çok uzun.';
+  }
+  state.tabletAddress = address;
+}
+
+/** HA adresine ulaşılabiliyor mu? HA'nın herkese açık manifest.json'u istenir (no-cors: yanıtın kendisi okunmaz). */
+async function probe() {
+  refresh();
+  const status = $('#ha-durum');
+  if (!state.ha) return;
+  const seq = ++state.probeSeq;
+  const target = probeUrl(state.ha.url);
+  setStatus(status, 'Deneniyor…');
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), PROBE_TIMEOUT_MS);
+  try {
+    await fetch(target, { mode: 'no-cors', cache: 'no-store', signal: ctrl.signal, credentials: 'omit', referrerPolicy: 'no-referrer' });
+    if (seq !== state.probeSeq) return;
+    log.info('Home Assistant yanıt verdi', { target });
+    setStatus(status, `Ulaşıldı: ${state.ha.url} yanıt veriyor.`, 'iyi');
+  } catch (err) {
+    if (seq !== state.probeSeq) return;
+    log.warn('Home Assistant yanıt vermedi', { target, error: err?.name || String(err) });
+    const hint = isMdnsHostname(state.ha.hostname)
+      ? ' Bilgisayar ".local" adını bulamıyor olabilir; Home Assistant\'ın IP adresini dene.'
+      : ' Adresi, portu ve bilgisayarın aynı ağda olduğunu kontrol et.';
+    setStatus(status, `Ulaşılamadı.${hint}`, 'kotu');
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function applyMode() {
+  const core = document.querySelector('input[name="tur"]:checked')?.value === 'core';
+  for (const el of $$('[data-yol="os"]')) el.hidden = core;
+  for (const el of $$('[data-yol="core"]')) el.hidden = !core;
+  $('[data-tablet-no]').textContent = core ? '3' : '4';
+  $('[data-pro-no]').textContent = core ? '4' : '5';
+  refresh();
+}
+
+async function copyAddress() {
+  const text = state.tabletAddress || '';
+  const button = $('[data-kopyala]');
+  try {
+    await navigator.clipboard.writeText(text);
+    button.textContent = 'Kopyalandı';
+  } catch {
+    // file:// sayfasında pano izni olmayabilir: adres seçilir, Ctrl+C ile kopyalanır
+    const range = document.createRange();
+    range.selectNodeContents($('[data-tablet-adres]'));
+    getSelection().removeAllRanges();
+    getSelection().addRange(range);
+    button.textContent = 'Seçildi: Ctrl+C';
+  }
+  setTimeout(() => { button.textContent = 'Kopyala'; }, 2000);
+}
+
+function init() {
+  $('[data-surum]').textContent = `Sürüm ${KURULUM.surum}`;
+  const release = KURULUM.yayin;
+  $('[data-onyayin]').hidden = release;
+  $('[data-yayin-yolu]').hidden = !release;
+  $('[data-yerel-yolu]').hidden = release;
+  const input = $('#ha-adres');
+  input.value = DEFAULT_HA_URL;
+  input.placeholder = DEFAULT_HA_URL;
+  let debounce = null;
+  input.addEventListener('input', () => { clearTimeout(debounce); debounce = setTimeout(refresh, 250); });
+  input.addEventListener('keydown', ev => { if (ev.key === 'Enter') probe(); });
+  $('#tablet-ip').addEventListener('input', () => { clearTimeout(debounce); debounce = setTimeout(refresh, 250); });
+  $('[data-dene]').addEventListener('click', probe);
+  $('[data-kopyala]').addEventListener('click', copyAddress);
+  for (const radio of $$('input[name="tur"]')) radio.addEventListener('change', applyMode);
+  applyMode();
+  log.info('Kurulum yardımcısı açıldı', { surum: KURULUM.surum, appId: KURULUM.appId, yayin: release });
+}
+
+init();
+
+})();</script>
+</body>
+</html>
