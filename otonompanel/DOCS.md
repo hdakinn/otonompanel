@@ -58,9 +58,9 @@ otomasyonları, uzun basma ve çift dokunma, koşullu kart, ek temalar, canlı h
 
 ## Gizlilik ve güvenlik
 - Panel çalışmak için internete ihtiyaç duymaz ve kendiliğinden hiçbir yere veri göndermez. İki isteğe bağlı istisna:
-  - Ayarlar → **Destek ve sorun bildir** bölümünden kendiniz bir talep gönderirseniz yazdığınız mesaj ve ekranda
+  - Ayarlar → Gelişmiş → **Destek ve sorun bildir** bölümünden kendiniz bir talep gönderirseniz yazdığınız mesaj ve ekranda
     gördüğünüz tanı bilgisi OtonomEv'e gider (cihaz, oda ve kişi adları, adresler, şifreler ve anahtarlar gitmez).
-  - Ayarlar → **Yeni sürümleri haber ver** anahtarını açarsanız (kapalı gelir) panel günde bir kez otonomev.com'dan
+  - Ayarlar → Gelişmiş → **Yeni sürümleri haber ver** anahtarını açarsanız (kapalı gelir) panel günde bir kez otonomev.com'dan
     yalnız son sürüm numarasını okur; eviniz ya da kurulu sürümünüzle ilgili bilgi göndermez. Uygulama olarak
     kurduysanız buna gerek yoktur: güncellemeyi Home Assistant kendisi bildirir.
   Ayrıntı: otonomev.com/gizlilik

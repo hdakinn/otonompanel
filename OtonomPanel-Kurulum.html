@@ -224,19 +224,21 @@ input:focus-visible, .dugme:focus-visible, a:focus-visible { outline: 2px solid 
   </main>
   <script>(() => {
 'use strict';
-const KURULUM = Object.freeze({"surum": "0.9.3", "appId": "0d208a70_otonompanel", "repositoryUrl": "https://github.com/hdakinn/otonompanel", "yayin": true});
+const KURULUM = Object.freeze({"surum": "0.9.4", "appId": "0d208a70_otonompanel", "repositoryUrl": "https://github.com/hdakinn/otonompanel", "yayin": true});
 /**
  * qr.js - QR kodu üretici (bayt kipi, hata düzeltme düzeyi M, sürüm 1-10)
  * ========================================================================
  * Yazar: Doğan (OtonomPanel)
  *
- * Kurulum yardımcısında tabletin açacağı adresi göstermek için. ISO/IEC 18004'e göre sıfırdan yazıldı;
- * dış kütüphane yok, internetten bir şey yüklenmez.
+ * Tabletin açacağı adresi göstermek için: panelin kurulum sihirbazı ve Ayarlar (ui/tablet_qr.js) ile Windows kurulum
+ * yardımcısı aynı dosyayı kullanır. ISO/IEC 18004'e göre sıfırdan yazıldı; dış kütüphane yok, internetten bir şey
+ * yüklenmez.
  * - Metin UTF-8 bayt olarak kodlanır; sığan en küçük sürüm seçilir (en çok 213 bayt: sürüm 10).
  * - Hata düzeltme: Reed–Solomon, GF(256), indirgeme polinomu x^8 + x^4 + x^3 + x^2 + 1 (0x11D).
  * - Sekiz maskenin hepsi denenir, ceza puanı en düşük olan seçilir.
  * Saf modül: DOM'a dokunmaz; Node'da test edilir (dev/testler/kurulum.test.mjs).
- * Kurulum sayfasına `dev/kurulum_paketle.py` gömer (export sözcükleri orada atılır).
+ * Tek kaynak bu dosyadır (23 Kasım 2026'dan beri): kurulum sayfasına `dev/kurulum_paketle.py` buradan gömer (export
+ * sözcükleri orada atılır). kurulum/kaynak/qr.js artık kullanılmaz.
  */
 
 const QR_MAX_VERSION = 10;

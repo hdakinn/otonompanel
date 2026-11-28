@@ -1,5 +1,19 @@
 # Değişiklikler
 
+## 0.9.4 (Beta, 28 Kasım 2026)
+- Telefon görünümü: panel telefonda tek sütun açılır, aşağı kaydırarak kullanılır; pencereler ekranı kaplar.
+- Başka bir cihazda aç: Ayarlar'daki QR kodu telefonla okut, panel orada açılsın. QR, Home Assistant'ın evdeki IP
+  adresini gösterir (".local" adını bulamayan cihazlar için).
+- Sayfalar arasında ekranı sağa sola kaydırarak geçebilirsin.
+- Görünüm ölçeği: Ayarlar → Görünüm'den yazıları ve kartları büyüt ya da küçült.
+- Kurulum kolaylaştı: Home Assistant adresi kendiliğinden gelir, "Paneli kur" düğmesi hep görünür, ilk açılışta üç
+  kısa ipucu çıkar.
+- Dokunma alanları büyüdü; Geri tuşu ve Esc açık pencereyi kapatır; bağlantı koparsa üstte açık bir uyarı çıkar.
+- Güncellemeden sonra Ayarlar'ın en üstünde "Bu sürümde yenilikler" listesi çıkar.
+- Ayarlar sadeleşti: "Yeni sürümleri haber ver" Ayarlar → Gelişmiş'e taşındı (davranışı aynı).
+- Düzeltme: oda penceresinde kartların alt kısmı kesilmiyor.
+- Kullanım koşulları 2026-11-28.1 sürümüne güncellendi.
+
 ## 0.9.3 (Beta, 21 Kasım 2026)
 - Canlı hava arka planı yenilendi: yağmur, sağanak, şimşek, kar, karla karışık yağmur, dolu, sis, rüzgâr, bulut ve
   yıldızlı gece artık gerçekçi ve derinlikli. Efekt kartların arkasında kalır, kartları örtmez.
